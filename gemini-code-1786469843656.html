@@ -1,0 +1,927 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ספר טלפונים של הישיבה - אלפון</title>
+    <style>
+        :root {
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-color: #1f2937;
+            --text-muted: #6b7280;
+            --primary-color: #3b82f6;
+            --primary-hover: #2563eb;
+            --input-bg: #ffffff;
+            --input-border: #cbd5e1;
+            --border-radius: 16px;
+            --box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            --badge-bg: #f1f5f9;
+            --badge-text: #475569;
+        }
+
+        [data-theme="dark"] {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-color: #f8fafc;
+            --text-muted: #94a3b8;
+            --primary-color: #3b82f6;
+            --primary-hover: #60a5fa;
+            --input-bg: #1e293b;
+            --input-border: #334155;
+            --box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+            --badge-bg: #334155;
+            --badge-text: #cbd5e1;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            transition: background-color 0.2s ease, color 0.2s ease;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            min-height: 100vh;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* --- מסך התחברות / הרשמה --- */
+        #auth-wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .auth-container {
+            background-color: var(--card-bg);
+            padding: 40px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            width: 100%;
+            max-width: 420px;
+            border: 1px solid var(--input-border);
+        }
+
+        .auth-header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .auth-header h2 {
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+
+        .auth-header p {
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 12px 15px;
+            background-color: var(--input-bg);
+            border: 1px solid var(--input-border);
+            color: var(--text-color);
+            border-radius: 8px;
+            font-size: 15px;
+            outline: none;
+        }
+
+        .form-options {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        .btn-submit {
+            width: 100%;
+            background-color: var(--primary-color);
+            color: #ffffff;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .btn-submit:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .switch-mode {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+
+        .switch-mode a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        /* --- מסך האלפון הראשי --- */
+        #app-wrapper {
+            padding: 20px 40px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .top-navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: var(--card-bg);
+            padding: 15px 25px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 15px;
+            border: 1px solid var(--input-border);
+        }
+
+        .nav-right, .nav-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .user-greeting {
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+
+        .user-greeting span {
+            color: var(--text-color);
+            font-weight: 600;
+        }
+
+        .btn-action {
+            padding: 9px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-logout { background-color: #ef4444; color: white; }
+        .btn-logout:hover { background-color: #dc2626; }
+        
+        .btn-admin { background-color: #10b981; color: white; }
+        .btn-admin:hover { background-color: #059669; }
+
+        .btn-theme { background-color: var(--badge-bg); color: var(--text-color); border: 1px solid var(--input-border); }
+
+        .search-input {
+            padding: 9px 15px;
+            border-radius: 8px;
+            border: 1px solid var(--input-border);
+            background-color: var(--input-bg);
+            color: var(--text-color);
+            font-size: 14px;
+            width: 240px;
+            outline: none;
+        }
+
+        .directory-header {
+            margin-bottom: 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .directory-header h1 {
+            font-size: 26px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .directory-header p {
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+
+        .filters-bar {
+            display: flex;
+            gap: 10px;
+        }
+
+        .filter-select {
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: 1px solid var(--input-border);
+            background-color: var(--card-bg);
+            color: var(--text-color);
+            font-size: 14px;
+            outline: none;
+        }
+
+        /* --- פאנל ניהול (Admin Panel) --- */
+        #admin-panel {
+            background-color: var(--card-bg);
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            padding: 25px;
+            margin-bottom: 30px;
+            border: 1px solid var(--input-border);
+        }
+
+        #admin-panel h3 {
+            margin-bottom: 15px;
+            font-size: 20px;
+        }
+
+        .admin-form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 20px;
+        }
+
+        .person-card {
+            background-color: var(--card-bg);
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            padding: 20px;
+            text-align: center;
+            position: relative;
+            border: 1px solid var(--input-border);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .avatar-circle {
+            width: 50px;
+            height: 50px;
+            background-color: #b45309;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 15px;
+            margin-bottom: 12px;
+        }
+
+        .person-name {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .tags-container {
+            display: flex;
+            gap: 6px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 15px;
+        }
+
+        .tag {
+            background-color: var(--badge-bg);
+            color: var(--badge-text);
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .phone-section {
+            font-size: 14px;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+        }
+
+        .phone-number {
+            font-size: 16px;
+            font-weight: 600;
+            color: #0284c7;
+            margin-bottom: 6px;
+            direction: ltr;
+        }
+
+        .email-text {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-bottom: 15px;
+            word-break: break-all;
+        }
+
+        .card-actions {
+            display: flex;
+            gap: 8px;
+            width: 100%;
+            margin-top: auto;
+        }
+
+        .btn-card {
+            flex: 1;
+            padding: 7px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            text-align: center;
+            text-decoration: none;
+        }
+
+        .btn-whatsapp { background-color: #10b981; color: white; }
+        .btn-whatsapp:hover { background-color: #059669; }
+        
+        .btn-email { background-color: #3b82f6; color: white; }
+        .btn-email:hover { background-color: #2563eb; }
+
+        @media (max-width: 600px) {
+            #app-wrapper { padding: 10px; }
+            .top-navbar { flex-direction: column; align-items: stretch; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- מסך התחברות / הרשמה -->
+    <div id="auth-wrapper">
+        <div class="auth-container">
+            <div id="login-form">
+                <div class="auth-header">
+                    <h2>כניסה למערכת</h2>
+                    <p>הכנס את פרטי הגישה לאלפון</p>
+                </div>
+                <form onsubmit="handleLogin(event)">
+                    <div class="form-group">
+                        <label>כתובת מייל</label>
+                        <input type="email" id="login-email" required placeholder="name@example.com">
+                    </div>
+                    <div class="form-group">
+                        <label>סיסמה</label>
+                        <input type="password" id="login-password" required placeholder="••••••••">
+                    </div>
+                    <div class="form-options">
+                        <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                            <input type="checkbox" id="remember-me"> זכור אותי
+                        </label>
+                    </div>
+                    <button type="submit" class="btn-submit">התחבר</button>
+                </form>
+                <div class="switch-mode">
+                    עדיין אין לך חשבון? <a onclick="toggleAuthForms()">הירשם כאן</a>
+                </div>
+            </div>
+
+            <div id="signup-form" class="hidden">
+                <div class="auth-header">
+                    <h2>יצירת חשבון חדש</h2>
+                    <p>הירשם כדי לגשת לאלפון הישיבה</p>
+                </div>
+                <form onsubmit="handleSignup(event)">
+                    <div class="form-group">
+                        <label>שם מלא</label>
+                        <input type="text" id="signup-name" required placeholder="ישראל ישראלי">
+                    </div>
+                    <div class="form-group">
+                        <label>כתובת מייל</label>
+                        <input type="email" id="signup-email" required placeholder="name@example.com">
+                    </div>
+                    <div class="form-group">
+                        <label>סיסמה</label>
+                        <input type="password" id="signup-password" required placeholder="••••••••">
+                    </div>
+                    <button type="submit" class="btn-submit">הירשם והכנס</button>
+                </form>
+                <div class="switch-mode">
+                    כבר יש לך חשבון? <a onclick="toggleAuthForms()">התחבר</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- מסך האלפון הראשי -->
+    <div id="app-wrapper" class="hidden">
+        
+        <header class="top-navbar">
+            <div class="nav-right">
+                <button class="btn-action btn-logout" onclick="handleLogout()">התנתק</button>
+                <button class="btn-action btn-admin" onclick="toggleAdminPanel()">⚙️ פאנל ניהול</button>
+                <div class="user-greeting">שלום, <span id="username-display">אהרן חנוכיב</span></div>
+            </div>
+            
+            <div class="nav-left">
+                <input type="text" class="search-input" placeholder="חיפוש מהיר באלפון..." id="searchInput" oninput="filterDirectory()">
+                <button class="btn-action btn-theme" onclick="toggleTheme()">🌓 מצב תצוגה</button>
+            </div>
+        </header>
+
+        <!-- פאנל ניהול להוספת אנשי קשר -->
+        <div id="admin-panel" class="hidden">
+            <h3>פאנל ניהול - הוספת איש קשר חדש</h3>
+            <form onsubmit="handleAddPerson(event)">
+                <div class="admin-form-grid">
+                    <div class="form-group" style="margin-bottom:0;">
+                        <label>שם מלא</label>
+                        <input type="text" id="new-name" required placeholder="שם מלא">
+                    </div>
+                    <div class="form-group" style="margin-bottom:0;">
+                        <label>עיר</label>
+                        <input type="text" id="new-city" required placeholder="עיר מגורים">
+                    </div>
+                    <div class="form-group" style="margin-bottom:0;">
+                        <label>טלפון</label>
+                        <input type="text" id="new-phone" required placeholder="מספר שלוחה/טלפון">
+                    </div>
+                    <div class="form-group" style="margin-bottom:0;">
+                        <label>מייל (אופציונלי)</label>
+                        <input type="email" id="new-email" placeholder="name@example.com">
+                    </div>
+                </div>
+                <button type="submit" class="btn-submit" style="width: auto; padding: 10px 20px;">הוסף לאלפון</button>
+            </form>
+        </div>
+
+        <section class="directory-header">
+            <div>
+                <h1>ספר טלפונים של הישיבה</h1>
+                <p>כל הבחורים והצוות – מסודר לפי סינון וחיפוש.</p>
+            </div>
+            <div class="filters-bar">
+                <select class="filter-select" id="cityFilter" onchange="filterDirectory()">
+                    <option value="">כל הערים</option>
+                    <option value="רשל"צ">רשל"צ</option>
+                    <option value="חולון">חולון</option>
+                    <option value="קרית גת">קרית גת</option>
+                    <option value="הר שמואל">הר שמואל</option>
+                    <option value="וואטנם">וואטנם</option>
+                    <option value="כפ"ח">כפ"ח</option>
+                    <option value="נחלת הר חב"ד">נחלת הר חב"ד</option>
+                    <option value="בני ברק">בני ברק</option>
+                    <option value="ביתר עילית">ביתר עילית</option>
+                    <option value="אוקרינה">אוקרינה</option>
+                    <option value="רחובות">רחובות</option>
+                    <option value="תל אביב">תל אביב</option>
+                    <option value="לוד">לוד</option>
+                    <option value="כרמיאל">כרמיאל</option>
+                    <option value="גבעת זאב">גבעת זאב</option>
+                    <option value="נס ציונה">נס ציונה</option>
+                    <option value="בית אריה">בית אריה</option>
+                    <option value="מצפה יריחו">מצפה יריחו</option>
+                    <option value="מודיעין עילית">מודיעין עילית</option>
+                    <option value="גבע בנימין\אדם">גבע בנימין\אדם</option>
+                    <option value="גדרה">גדרה</option>
+                    <option value="נהריה">נהריה</option>
+                    <option value="עפולה">עפולה</option>
+                    <option value="נתניה">נתניה</option>
+                    <option value="מודיעין מכבים רעות">מודיעין מכבים רעות</option>
+                    <option value="אלעד">אלעד</option>
+                    <option value="ירושלים">ירושלים</option>
+                    <option value="אילת">אילת</option>
+                    <option value="מגדל העמק">מגדל העמק</option>
+                    <option value="קריות">קריות</option>
+                    <option value="רמת השרון">רמת השרון</option>
+                    <option value="פתח תקווה">פתח תקווה</option>
+                    <option value="בית שמש">בית שמש</option>
+                    <option value="אחיסמך">אחיסמך</option>
+                    <option value="חשמונאים">חשמונאים</option>
+                    <option value="כוכב יעקב">כוכב יעקב</option>
+                    <option value="ערד">ערד</option>
+                    <option value="חיפה">חיפה</option>
+                </select>
+            </div>
+        </section>
+
+        <!-- רשת קוביות אנשי הקשר -->
+        <div class="cards-grid" id="cardsGrid">
+            
+            <div class="person-card" data-name="אברימי בורגן" data-city="רשל"צ"><div class="avatar-circle">א.ב</div><div class="person-name">אברימי בורגן</div><div class="tags-container"><span class="tag">📍 רשל"צ</span></div><div class="phone-section">טלפון:</div><div class="phone-number">9537</div><div class="email-text">rivkiborgen@gmail.com</div><div class="card-actions"><a href="https://wa.me/9729537" target="_blank" class="btn-card btn-whatsapp">וואטסאפ</a><a href="mailto:rivkiborgen@gmail.com" class="btn-card btn-email">מייל</a></div></div>
+
+            <div class="person-card" data-name="אהרן חנוכייב" data-city="חולון"><div class="avatar-circle">א.ח</div><div class="person-name">אהרן חנוכייב</div><div class="tags-container"><span class="tag">📍 חולון</span></div><div class="phone-section">טלפון:</div><div class="phone-number">8878</div><div class="email-text">aaronmh770@gmail.com</div><div class="card-actions"><a href="https://wa.me/9728878" target="_blank" class="btn-card btn-whatsapp">וואטסאפ</a><a href="mailto:aaronmh770@gmail.com" class="btn-card btn-email">מייל</a></div></div>
+
+            <div class="person-card" data-name="איצי וולפא" data-city="קרית גת"><div class="avatar-circle">א.ו</div><div class="person-name">איצי וולפא</div><div class="tags-container"><span class="tag">📍 קרית גת</span></div><div class="phone-section">טלפון:</div><div class="phone-number">8824</div><div class="email-text">v0546497704@gmail.com</div><div class="card-actions"><a href="https://wa.me/9728824" target="_blank" class="btn-card btn-whatsapp">וואטסאפ</a><a href="mailto:v0546497704@gmail.com" class="btn-card btn-email">מייל</a></div></div>
+
+            <div class="person-card" data-name="אליהו חיימסון" data-city="הר שמואל"><div class="avatar-circle">א.ח</div><div class="person-name">אליהו חיימסון</div><div class="tags-container"><span class="tag">📍 הר שמואל</span></div><div class="phone-section">טלפון:</div><div class="phone-number">8900</div><div class="email-text">eliauson770@gmail.com</div><div class="card-actions"><a href="https://wa.me/9728900" target="_blank" class="btn-card btn-whatsapp">וואטסאפ</a><a href="mailto:eliauson770@gmail.com" class="btn-card btn-email">מייל</a></div></div>
+
+            <div class="person-card" data-name="אפי הרטמן" data-city="וואטנם"><div class="avatar-circle">א.ה</div><div class="person-name">אפי הרטמן</div><div class="tags-container"><span class="tag">📍 וואטנם</span></div><div class="phone-section">טלפון:</div><div class="phone-number">7931</div><div class="email-text">effihartman@gmail.com</div><div class="card-actions"><a href="https://wa.me/9727931" target="_blank" class="btn-card btn-whatsapp">וואטסאפ</a><a href="mailto:effihartman@gmail.com" class="btn-card btn-email">מייל</a></div></div>
+
+            <div class="person-card" data-name="ארי חפר" data-city="כפ"ח"><div class="avatar-circle">א.ח</div><div class="person-name">ארי חפר</div><div class="tags-container"><span class="tag">📍 כפ"ח</span></div><div class="phone-section">טלפון:</div><div class="phone-number">8815</div><div class="email-text">770chefer@gmail.com</div><div class="card-actions"><a href="https://wa.me/9728815" target="_blank" class="btn-card btn-whatsapp">וואטסאפ</a><a href="mailto:770chefer@gmail.com" class="btn-card btn-email">מייל</a></div></div>
+
+            <div class="person-card" data-name="בני רבינוביץ" data-city="כפ"ח"><div class="avatar-circle">ב.ר</div><div class="person-name">בני רבינוביץ</div><div class="tags-container"><span class="tag">📍 כפ"ח</span></div><div class="phone-section">טלפון:</div><div class="phone-number">8832</div><div class="email-text">rabinovitz.beny@gmail.com</div><div class="card-actions"><a href="https://wa.me/9728832" target="_blank" class="btn-card btn-whatsapp">וואטסאפ</a><a href="mailto:rabinovitz.beny@gmail.com" class="btn-card btn-email">מייל</a></div></div>
+
+            <div class="person-card" data-name="גרשי קעניג" data-city="נחלת הר חב"ד"><div class="avatar-circle">ג.ק</div><div class="person-name">גרשי קעניג</div><div class="tags-container"><span class="tag">📍 נחלת הר חב"ד</span></div><div class="phone-section">טלפון:</div><div class="phone-number">8868</div><div class="email-text">jgk770770@gmail.com</div><div class="card-actions"><a href="https://wa.me/9728868" target="_blank" class="btn-card btn-whatsapp">וואטסאפ</a><a href="mailto:jgk770770@gmail.com" class="btn-card btn-email">מייל</a></div></div>
+
+            <div class="person-card" data-name="דוד ויגלר" data-city="רשל"צ"><div class="avatar-circle">ד.ו</div><div class="person-name">דוד ויגלר</div><div class="tags-container"><span class="tag">📍 רשל"צ</span></div><div class="phone-section">טלפון:</div><div class="phone-number">9427</div><div class="email-text">dovidvigler123@gmail.com</div><div class="card-actions"><a href="https://wa.me/9729427" target="_blank" class="btn-card btn-whatsapp">וואטסאפ</a><a href="mailto:dovidvigler123@gmail.com" class="btn-card btn-email">מייל</a></div></div>
+
+            <div class="person-card" data-name="זלמי שכטר" data-city="בני ברק"><div class="avatar-circle">ז.ש</div><div class="person-name">זלמי שכטר</div><div class="tags-container"><span class="tag">📍 בני ברק</span></div><div class="phone-section">טלפון:</div><div class="phone-number">8843</div><div class="email-text">zalmisktr@gmail.com</div><div class="card-actions"><a href="https://wa.me/9728843" target="_blank" class="btn-card btn-whatsapp">וואטסאפ</a><a href="mailto:zalmisktr@gmail.com" class="btn-card btn-email">מייל</a></div></div>
+
+            <div class="person-card" data-name="יוסי לוין" data-city="ביתר עילית"><div class="avatar-circle">י.ל</div><div class="person-name">יוסי לוין</div><div class="tags-container"><span class="tag">📍 ביתר עילית</span></div><div class="phone-section">טלפון:</div><div class="phone-number">8840</div><div class="email-text">josylevin123@gmail.com</div><div class="card-actions"><a href="https://wa.me/9728840" target="_blank" class="btn-card btn-whatsapp">וואטסאפ</a><a href="mailto:josylevin123@gmail.com" class="btn-card btn-email">מייל</a></div></div>
+
+            <div class="person-card" data-name="ישרליק גופין" data-city="אוקרינה"><div class="avatar-circle">י.ג</div><div class="person-name">ישרליק גופין</div><div class="tags-container"><span class="tag">📍 אוקרינה</span></div><div class="phone-section">טלפון:</div><div class="phone-number">8825</div><div class="email-text">isroelg770@gmail.com</div><div class="card-actions"><a href="https://wa.me/9728825" target="_blank" class="btn-card btn-whatsapp">וואטסאפ</a><a href="mailto:isroelg770@gmail.com" class="btn-card btn-email">מייל</a></div></div>
+
+            <div class="person-card" data-name="לוי ברק" data-city="כפ"ח"><div class="avatar-circle">ל.ב</div><div class="person-name">לוי ברק</div><div class="tags-container"><span class="tag">📍 כפ"ח</span></div><div class="phone-section">טלפון:</div><div class="phone-number">9760</div><div class="email-text">levibarak770@gmail.com</div><div class="card-actions"><a href="https://wa.me/9729760" target="_blank" class="btn-card btn-whatsapp">וואטסאפ</a><a href="mailto:levibarak770@gmail.com" class="btn-card btn-email">מייל</a></div></div>
+
+            <div class="person-card" data-name="מוישי דרעי" data-city="רחובות"><div class="avatar-circle">מ.ד</div><div class="person-name">מוישי דרעי</div><div class="tags-container"><span class="tag">📍 רחובות</span></div><div class="phone-section">טלפון:</div><div class="phone-number">8820</div><div class="email-text">moyshideri@gmail.com</div><div class="card-actions"><a href="https://wa.me/9728820" target="_blank" class="btn-card btn-whatsapp">וואטסאפ</a><a href="mailto:moyshideri@gmail.com" class="btn-card btn-email">מייל</a></div></div>
+
+            <div class="person-card" data-name="מוישי העכט" data-city="תל אביב"><div class="avatar-circle">מ.ה</div><div class="person-name">מוישי העכט</div><div class="tags-container"><span class="tag">📍 תל אביב</span></div><div class="phone-section">טלפון:</div><div class="phone-number">9078</div><div class="email-text">moishyhecht123@gmail.com</div><div class="card-actions"><a href="https://wa.me/9729078" target="_blank" class="btn-card btn-whatsapp">וואטסאפ</a><a href="mailto:moishyhecht123@gmail.com" class="btn-card btn-email">מייל</a></div></div>
+
+            <div class="person-card" data-name="מני רבינוביץ" data-city="ביתר עילית"><div class="avatar-circle">מ.ר</div><div class="person-name">מני רבינוביץ</div><div class="tags-container"><span class="tag">📍 ביתר עילית</span></div><div class="phone-section">טלפון:</div><div class="phone-number">8867</div><div class="email-text">meni135789@gmail.com</div><div class="card-actions"><a href="https://wa.me/9728867" target="_blank" class="btn-card btn-whatsapp">וואטסאפ</a><a href="mailto:meni135789@gmail.com" class="btn-card btn-email">מייל</a></div></div>
+
+            <div class="person-card" data-name="מענדי אברמוביץ" data-city="לוד"><div class="avatar-circle">מ.א</div><div class="person-name">מענדי אברמוביץ</div><div class="tags-container"><span class="tag">📍 לוד</span></div><div class="phone-section">טלפון:</div><div class="phone-number">8846</div><div class="email-text">abramovitchkids@gmail.com</div><div class="card-actions"><a href="https://wa.me/9728846" target="_blank" class="btn-card btn-whatsapp">וואטסאפ</a><a href="mailto:abramovitchkids@gmail.com" class="btn-card btn-email">מייל</a></div></div>
+
+            <div class="person-card" data-name="מענדי גבעוני" data-city="כפ"ח"><div class="avatar-circle">מ.ג</div><div class="person-name">מענדי גבעוני</div><div class="tags-container"><span class="tag">📍 כפ"ח</span></div><div class="phone-section">טלפון:</div><div class="phone-number">8808</div><div class="email-text">mendi.givoni@gmail.com</div><div class="card-actions"><a href="https://wa.me/9728808" target="_blank" class="btn-card btn-whatsapp">וואטסאפ</a><a href="mailto:mendi.givoni@gmail.com" class="btn-card btn-email">מייל</a></div></div>
+
+            <div class="person-card" data-name="מענדי גודמן" data-city="רחובות"><div class="avatar-circle">מ.ג</div><div class="person-name">מענדי גודמן</div><div class="tags-container"><span class="tag">📍 רחובות</span></div><div class="phone-section">טלפון:</div><div class="phone-number">8834</div><div class="email-text">mendigman@gmail.com</div><div class="card-actions"><a href="https://wa.me/9728834" target="_blank" class="btn-card btn-whatsapp">וואטסאפ</a><a href="mailto:mendigman@gmail.com" class="btn-card btn-email">מייל</a></div></div>
+
+            <div class="person-card" data-name="מענדי הבלין" data-city="כפ"ח"><div class="avatar-circle">מ.ה</div><div class="person-name">מענדי הבלין</div><div class="tags-container"><span class="tag">📍 כפ"ח</span></div><div class="phone-section">טלפון:</div><div class="phone-number">8904</div><div class="email-text">mendihavlinhh@gmail.com</div><div class="card-actions"><a href="https://wa.me/9728904" target="_blank" class="btn-card btn-whatsapp">וואטסאפ</a><a href="mailto:mendihavlinhh@gmail.com" class="btn-card btn-email">מייל</a></div></div>
+
+            <div class="person-card" data-name="מענדל בורקיס" data-city="ירושלים"><div class="avatar-circle">מ.ב</div><div class="person-name">מענדל בורקיס</div><div class="tags-container"><span class="tag">📍 ירושלים</span></div><div class="phone-section">טלפון:</div><div class="phone-number">8842</div><div class="email-text">mendale.burkis@gmail.com</div><div class="card-actions"><a href="https://wa.me/9728842" target="_blank" class="btn-card btn-whatsapp">וואטסאפ</a><a href="mailto:mendale.burkis@gmail.com" class="btn-card btn-email">מייל</a></div></div>
+
+            <div class="person-card" data-name="צביקי מרטון" data-city="ביתר עילית"><div class="avatar-circle">צ.מ</div><div class="person-name">צביקי מרטון</div><div class="tags-container"><span class="tag">📍 ביתר עילית</span></div><div class="phone-section">טלפון:</div><div class="phone-number">8166</div><div class="email-text">tmarton770@gmail.com</div><div class="card-actions"><a href="https://wa.me/9728166" target="_blank" class="btn-card btn-whatsapp">וואטסאפ</a><a href="mailto:tmarton770@gmail.com" class="btn-card btn-email">מייל</a></div></div>
+
+            <div class="person-card" data-name="שאולי ונקרט" data-city="מצפה יריחו"><div class="avatar-circle">ש.ו</div><div class="person-name">שאולי ונקרט</div><div class="tags-container"><span class="tag">📍 מצפה יריחו</span></div><div class="phone-section">טלפון:</div><div class="phone-number">8839</div><div class="email-text">052538zx@gmail.com</div><div class="card-actions"><a href="https://wa.me/9728839" target="_blank" class="btn-card btn-whatsapp">וואטסאפ</a><a href="mailto:052538zx@gmail.com" class="btn-card btn-email">מייל</a></div></div>
+
+            <div class="person-card" data-name="שולם דערען" data-city="רחובות"><div class="avatar-circle">ש.ד</div><div class="person-name">שולם דערען</div><div class="tags-container"><span class="tag">📍 רחובות</span></div><div class="phone-section">טלפון:</div><div class="phone-number">8880</div><div class="email-text">sholemderen770@gmail.com</div><div class="card-actions"><a href="https://wa.me/9728880" target="_blank" class="btn-card btn-whatsapp">וואטסאפ</a><a href="mailto:sholemderen770@gmail.com" class="btn-card btn-email">מייל</a></div></div>
+
+            <div class="person-card" data-name="שולם קריצבסקי" data-city="כפ"ח"><div class="avatar-circle">ש.ק</div><div class="person-name">שולם קריצבסקי</div><div class="tags-container"><span class="tag">📍 כפ"ח</span></div><div class="phone-section">טלפון:</div><div class="phone-number">8864</div><div class="email-text">sholemkrich@gmail.com</div><div class="card-actions"><a href="https://wa.me/9728864" target="_blank" class="btn-card btn-whatsapp">וואטסאפ</a><a href="mailto:sholemkrich@gmail.com" class="btn-card btn-email">מייל</a></div></div>
+
+            <div class="person-card" data-name="שימי שלוסברג" data-city="ירושלים"><div class="avatar-circle">ש.ש</div><div class="person-name">שימי שלוסברג</div><div class="tags-container"><span class="tag">📍 ירושלים</span></div><div class="phone-section">טלפון:</div><div class="phone-number">8882</div><div class="email-text">shimi.sh770@gmail.com</div><div class="card-actions"><a href="https://wa.me/9728882" target="_blank" class="btn-card btn-whatsapp">וואטסאפ</a><a href="mailto:shimi.sh770@gmail.com" class="btn-card btn-email">מייל</a></div></div>
+
+            <div class="person-card" data-name="שמואל אלפנט" data-city="תל אביב"><div class="avatar-circle">ש.א</div><div class="person-name">שמואל אלפנט</div><div class="tags-container"><span class="tag">📍 תל אביב</span></div><div class="phone-section">טלפון:</div><div class="phone-number">8829</div><div class="email-text">shmuele12770@gmail.com</div><div class="card-actions"><a href="https://wa.me/9728829" target="_blank" class="btn-card btn-whatsapp">וואטסאפ</a><a href="mailto:shmuele12770@gmail.com" class="btn-card btn-email">מייל</a></div></div>
+
+            <div class="person-card" data-name="שמואל רודין" data-city="כרמיאל"><div class="avatar-circle">ש.ר</div><div class="person-name">שמואל רודין</div><div class="tags-container"><span class="tag">📍 כרמיאל</span></div><div class="phone-section">טלפון:</div><div class="phone-number">8910</div><div class="email-text">shmuelrodin@gmail.com</div><div class="card-actions"><a href="https://wa.me/9728910" target="_blank" class="btn-card btn-whatsapp">וואטסאפ</a><a href="mailto:shmuelrodin@gmail.com" class="btn-card btn-email">מייל</a></div></div>
+
+            <div class="person-card" data-name="שמולי ניימרק" data-city="גבעת זאב"><div class="avatar-circle">ש.נ</div><div class="person-name">שמולי ניימרק</div><div class="tags-container"><span class="tag">📍 גבעת זאב</span></div><div class="phone-section">טלפון:</div><div class="phone-number">8816</div><div class="email-text">shmulineimark@gmail.com</div><div class="card-actions"><a href="https://wa.me/9728816" target="_blank" class="btn-card btn-whatsapp">וואטסאפ</a><a href="mailto:shmulineimark@gmail.com" class="btn-card btn-email">מייל</a></div></div>
+
+            <div class="person-card" data-name="שמוליק פלדמן" data-city="נס ציונה"><div class="avatar-circle">ש.פ</div><div class="person-name">שמוליק פלדמן</div><div class="tags-container"><span class="tag">📍 נס ציונה</span></div><div class="phone-section">טלפון:</div><div class="phone-number">9429</div><div class="email-text">shmulikach@gmail.com</div><div class="card-actions"><a href="https://wa.me/9729429" target="_blank" class="btn-card btn-whatsapp">וואטסאפ</a><a href="mailto:shmulikach@gmail.com" class="btn-card btn-email">מייל</a></div></div>
+
+            <div class="person-card" data-name="שניאור שטרסברג" data-city="בית אריה"><div class="avatar-circle">ש.ש</div><div class="person-name">שניאור שטרסברג</div><div class="tags-container"><span class="tag">📍 בית אריה</span></div><div class="phone-section">טלפון:</div><div class="phone-number">8903</div><div class="email-text">s7707701212@gmail.com</div><div class="card-actions"><a href="https://wa.me/9728903" target="_blank" class="btn-card btn-whatsapp">וואטסאפ</a><a href="mailto:s7707701212@gmail.com" class="btn-card btn-email">מייל</a></div></div>
+
+            <div class="person-card" data-name="תני דערען" data-city="רחובות"><div class="avatar-circle">ת.ד</div><div class="person-name">תני דערען</div><div class="tags-container"><span class="tag">📍 רחובות</span></div><div class="phone-section">טלפון:</div><div class="phone-number">8879</div><div class="email-text">tanyderen@gmail.com</div><div class="card-actions"><a href="https://wa.me/9728879" target="_blank" class="btn-card btn-whatsapp">וואטסאפ</a><a href="mailto:tanyderen@gmail.com" class="btn-card btn-email">מייל</a></div></div>
+
+            <div class="person-card" data-name="אברומי קרישבסקי" data-city="ביתר עילית"><div class="avatar-circle">א.ק</div><div class="person-name">אברומי קרישבסקי</div><div class="tags-container"><span class="tag">📍 ביתר עילית</span></div><div class="phone-section">טלפון:</div><div class="phone-number">8869</div><div class="email-text">ayk7706689@gmail.com</div><div class="card-actions"><a href="https://wa.me/9728869" target="_blank" class="btn-card btn-whatsapp">וואטסאפ</a><a href="mailto:ayk7706689@gmail.com" class="btn-card btn-email">מייל</a></div></div>
+
+            <div class="person-card" data-name="אהרן אופן" data-city="כפ"ח"><div class="avatar-circle">א.א</div><div class="person-name">אהרן אופן</div><div class="tags-container"><span class="tag">📍 כפ"ח</span></div><div class="phone-section">טלפון:</div><div class="phone-number">8812</div><div class="email-text">ofen.aron@gmail.com</div><div class="card-actions"><a href="https://wa.me/9728812" target="_blank" class="btn-card btn-whatsapp">וואטסאפ</a><a href="mailto:ofen.aron@gmail.com" class="btn-card btn-email">מייל</a></div></div>
+
+            <div class="person-card" data-name="אברימי וילהלם" data-city="חולון"><div class="avatar-circle">א.ו</div><div class="person-name">אברימי וילהלם</div><div class="tags-container"><span class="tag">📍 חולון</span></div><div class="phone-section">טלפון:</div><div class="phone-number">8847</div><div class="email-text">אין מייל</div><div class="card-actions"><a href="https://wa.me/9728847" target="_blank" class="btn-card btn-whatsapp" style="flex:100%;">וואטסאפ</a></div></div>
+
+            <div class="person-card" data-name="איצקה אשכנזי" data-city="כפ"ח"><div class="avatar-circle">א.א</div><div class="person-name">איצקה אשכנזי</div><div class="tags-container"><span class="tag">📍 כפ"ח</span></div><div class="phone-section">טלפון:</div><div class="phone-number">9079</div><div class="email-text">ksashkenazi@gmail.com</div><div class="card-actions"><a href="https://wa.me/9729079" target="_blank" class="btn-card btn-whatsapp">וואטסאפ</a><a href="mailto:ksashkenazi@gmail.com" class="btn-card btn-email">מייל</a></div></div>
+
+            <div class="person-card" data-name="שמואל ליפסקר" data-city="גבעת זאב"><div class="avatar-circle">ש.ל</div><div class="person-name">שמואל ליפסקר</div><div class="tags-container"><span class="tag">📍 גבעת זאב</span></div><div class="phone-section">טלפון:</div><div class="phone-number">8866</div><div class="email-text">אין מייל</div><div class="card-actions"><a href="https://wa.me/9728866" target="_blank" class="btn-card btn-whatsapp" style="flex:100%;">וואטסאפ</a></div></div>
+
+            <div class="person-card" data-name="לוי חביב" data-city="כוכב יעקב"><div class="avatar-circle">ל.ח</div><div class="person-name">לוי חביב</div><div class="tags-container"><span class="tag">📍 כוכב יעקב</span></div><div class="phone-section">טלפון:</div><div class="phone-number">8856</div><div class="email-text">אין מייל</div><div class="card-actions"><a href="https://wa.me/9728856" target="_blank" class="btn-card btn-whatsapp" style="flex:100%;">וואטסאפ</a></div></div>
+
+            <div class="person-card" data-name="יוני שיף" data-city="נתניה"><div class="avatar-circle">י.ש</div><div class="person-name">יוני שיף</div><div class="tags-container"><span class="tag">📍 נתניה</span></div><div class="phone-section">טלפון:</div><div class="phone-number">8854</div><div class="email-text">s0529597702@gmail.com</div><div class="card-actions"><a href="https://wa.me/9728854" target="_blank" class="btn-card btn-whatsapp">וואטסאפ</a><a href="mailto:s0529597702@gmail.com" class="btn-card btn-email">מייל</a></div></div>
+
+            <div class="person-card" data-name="ברוך שולעם קעניג" data-city="מודיעין עילית"><div class="avatar-circle">ב.ק</div><div class="person-name">ברוך שולעם קעניג</div><div class="tags-container"><span class="tag">📍 מודיעין עילית</span></div><div class="phone-section">טלפון:</div><div class="phone-number">8871</div><div class="email-text">mendi8871@gmail.com</div><div class="card-actions"><a href="https://wa.me/9728871" target="_blank" class="btn-card btn-whatsapp">וואטסאפ</a><a href="mailto:mendi8871@gmail.com" class="btn-card btn-email">מייל</a></div></div>
+
+            <div class="person-card" data-name="דוידי גלויברמן" data-city="לוד"><div class="avatar-circle">ד.ג</div><div class="person-name">דוידי גלויברמן</div><div class="tags-container"><span class="tag">📍 לוד</span></div><div class="phone-section">טלפון:</div><div class="phone-number">9791</div><div class="email-text">אין מייל</div><div class="card-actions"><a href="https://wa.me/9729791" target="_blank" class="btn-card btn-whatsapp" style="flex:100%;">וואטסאפ</a></div></div>
+
+            <div class="person-card" data-name="גרשון סוקניק" data-city="כפ"ח"><div class="avatar-circle">ג.ס</div><div class="person-name">גרשון סוקניק</div><div class="tags-container"><span class="tag">📍 כפ"ח</span></div><div class="phone-section">טלפון:</div><div class="phone-number">8823</div><div class="email-text">אין מייל</div><div class="card-actions"><a href="https://wa.me/9728823" target="_blank" class="btn-card btn-whatsapp" style="flex:100%;">וואטסאפ</a></div></div>
+
+            <div class="person-card" data-name="שמואל לאטר" data-city="כפ"ח"><div class="avatar-circle">ש.ל</div><div class="person-name">שמואל לאטר</div><div class="tags-container"><span class="tag">📍 כפ"ח</span></div><div class="phone-section">טלפון:</div><div class="phone-number">9548</div><div class="email-text">אין מייל</div><div class="card-actions"><a href="https://wa.me/9729548" target="_blank" class="btn-card btn-whatsapp" style="flex:100%;">וואטסאפ</a></div></div>
+
+            <div class="person-card" data-name="אברומי וויס" data-city="ירושלים"><div class="avatar-circle">א.ו</div><div class="person-name">אברומי וויס</div><div class="tags-container"><span class="tag">📍 ירושלים</span></div><div class="phone-section">טלפון:</div><div class="phone-number">8912</div><div class="email-text">אין מייל</div><div class="card-actions"><a href="https://wa.me/9728912" target="_blank" class="btn-card btn-whatsapp" style="flex:100%;">וואטסאפ</a></div></div>
+
+            <div class="person-card" data-name="דובי סגל" data-city="לוד"><div class="avatar-circle">ד.ס</div><div class="person-name">דובי סגל</div><div class="tags-container"><span class="tag">📍 לוד</span></div><div class="phone-section">טלפון:</div><div class="phone-number">8896</div><div class="email-text">9674ff@gmail.com</div><div class="card-actions"><a href="https://wa.me/9728896" target="_blank" class="btn-card btn-whatsapp">וואטסאפ</a><a href="mailto:9674ff@gmail.com" class="btn-card btn-email">מייל</a></div></div>
+
+            <div class="person-card" data-name="שניאור רבינוביץ" data-city="כפ"ח"><div class="avatar-circle">ש.ר</div><div class="person-name">שניאור רבינוביץ</div><div class="tags-container"><span class="tag">📍 כפ"ח</span></div><div class="phone-section">טלפון:</div><div class="phone-number">8898</div><div class="email-text">rabinchani@gmail.com</div><div class="card-actions"><a href="https://wa.me/9728898" target="_blank" class="btn-card btn-whatsapp">וואטסאפ</a><a href="mailto:rabinchani@gmail.com" class="btn-card btn-email">מייל</a></div></div>
+
+            <div class="person-card" data-name="שמוליק קעניג" data-city="לוד"><div class="avatar-circle">ש.ק</div><div class="person-name">שמוליק קעניג</div><div class="tags-container"><span class="tag">📍 לוד</span></div><div class="phone-section">טלפון:</div><div class="phone-number">8107</div><div class="email-text">אין מייל</div><div class="card-actions"><a href="https://wa.me/9728107" target="_blank" class="btn-card btn-whatsapp" style="flex:100%;">וואטסאפ</a></div></div>
+
+            <div class="person-card" data-name="שמוליק וואלף" data-city="כפ"ח"><div class="avatar-circle">ש.ו</div><div class="person-name">שמוליק וואלף</div><div class="tags-container"><span class="tag">📍 כפ"ח</span></div><div class="phone-section">טלפון:</div><div class="phone-number">8874</div><div class="email-text">אין מייל</div><div class="card-actions"><a href="https://wa.me/9728874" target="_blank" class="btn-card btn-whatsapp" style="flex:100%;">וואטסאפ</a></div></div>
+
+            <div class="person-card" data-name="שולם גולדברג" data-city="גבע בנימין\אדם"><div class="avatar-circle">ש.ג</div><div class="person-name">שולם גולדברג</div><div class="tags-container"><span class="tag">📍 גבע בנימין\אדם</span></div><div class="phone-section">טלפון:</div><div class="phone-number">9518</div><div class="email-text">אין מייל</div><div class="card-actions"><a href="https://wa.me/9729518" target="_blank" class="btn-card btn-whatsapp" style="flex:100%;">וואטסאפ</a></div></div>
+
+            <div class="person-card" data-name="אלמוג צדוק" data-city="גדרה"><div class="avatar-circle">א.צ</div><div class="person-name">אלמוג צדוק</div><div class="tags-container"><span class="tag">📍 גדרה</span></div><div class="phone-section">טלפון:</div><div class="phone-number">8817</div><div class="email-text">אין מייל</div><div class="card-actions"><a href="https://wa.me/9728817" target="_blank" class="btn-card btn-whatsapp" style="flex:100%;">וואטסאפ</a></div></div>
+
+            <div class="person-card" data-name="מענדי מוגרבי" data-city="כפ"ח"><div class="avatar-circle">מ.מ</div><div class="person-name">מענדי מוגרבי</div><div class="tags-container"><span class="tag">📍 כפ"ח</span></div><div class="phone-section">טלפון:</div><div class="phone-number">8884</div><div class="email-text">אין מייל</div><div class="card-actions"><a href="https://wa.me/9728884" target="_blank" class="btn-card btn-whatsapp" style="flex:100%;">וואטסאפ</a></div></div>
+
+            <div class="person-card" data-name="מ"מ לויטין" data-city="תל אביב"><div class="avatar-circle">מ.ל</div><div class="person-name">מ"מ לויטין</div><div class="tags-container"><span class="tag">📍 תל אביב</span></div><div class="phone-section">טלפון:</div><div class="phone-number">8802</div><div class="email-text">אין מייל</div><div class="card-actions"><a href="https://wa.me/9728802" target="_blank" class="btn-card btn-whatsapp" style="flex:100%;">וואטסאפ</a></div></div>
+
+            <div class="person-card" data-name="מ"מ קעניג" data-city="נהריה"><div class="avatar-circle">מ.ק</div><div class="person-name">מ"מ קעניג</div><div class="tags-container"><span class="tag">📍 נהריה</span></div><div class="phone-section">טלפון:</div><div class="phone-number">8806</div><div class="email-text">אין מייל</div><div class="card-actions"><a href="https://wa.me/9728806" target="_blank" class="btn-card btn-whatsapp" style="flex:100%;">וואטסאפ</a></div></div>
+
+            <div class="person-card" data-name="י"י קרץ" data-city="עפולה"><div class="avatar-circle">י.ק</div><div class="person-name">י"י קרץ</div><div class="tags-container"><span class="tag">📍 עפולה</span></div><div class="phone-section">טלפון:</div><div class="phone-number">8875</div><div class="email-text">אין מייל</div><div class="card-actions"><a href="https://wa.me/9728875" target="_blank" class="btn-card btn-whatsapp" style="flex:100%;">וואטסאפ</a></div></div>
+
+            <div class="person-card" data-name="יענקי חן" data-city="כפ"ח"><div class="avatar-circle">י.ח</div><div class="person-name">יענקי חן</div><div class="tags-container"><span class="tag">📍 כפ"ח</span></div><div class="phone-section">טלפון:</div><div class="phone-number">8803</div><div class="email-text">אין מייל</div><div class="card-actions"><a href="https://wa.me/9728803" target="_blank" class="btn-card btn-whatsapp" style="flex:100%;">וואטסאפ</a></div></div>
+
+            <div class="person-card" data-name="לוי פלס" data-city="כפ"ח"><div class="avatar-circle">ל.פ</div><div class="person-name">לוי פלס</div><div class="tags-container"><span class="tag">📍 כפ"ח</span></div><div class="phone-section">טלפון:</div><div class="phone-number">8853</div><div class="email-text">leviipeles@gmail.com</div><div class="card-actions"><a href="https://wa.me/9728853" target="_blank" class="btn-card btn-whatsapp">וואטסאפ</a><a href="mailto:leviipeles@gmail.com" class="btn-card btn-email">מייל</a></div></div>
+
+            <div class="person-card" data-name="שולם כהן" data-city="תל אביב"><div class="avatar-circle">ש.כ</div><div class="person-name">שולם כהן</div><div class="tags-container"><span class="tag">📍 תל אביב</span></div><div class="phone-section">טלפון:</div><div class="phone-number">8885</div><div class="email-text">אין מייל</div><div class="card-actions"><a href="https://wa.me/9728885" target="_blank" class="btn-card btn-whatsapp" style="flex:100%;">וואטסאפ</a></div></div>
+
+            <div class="person-card" data-name="גבריאל ליסון" data-city="כפ"ח"><div class="avatar-circle">ג.ל</div><div class="person-name">גבריאל ליסון</div><div class="tags-container"><span class="tag">📍 כפ"ח</span></div><div class="phone-section">טלפון:</div><div class="phone-number">9762</div><div class="email-text">אין מייל</div><div class="card-actions"><a href="https://wa.me/9729762" target="_blank" class="btn-card btn-whatsapp" style="flex:100%;">וואטסאפ</a></div></div>
+
+            <div class="person-card" data-name="איצי למברג" data-city="נתניה"><div class="avatar-circle">א.ל</div><div class="person-name">איצי למברג</div><div class="tags-container"><span class="tag">📍 נתניה</span></div><div class="phone-section">טלפון:</div><div class="phone-number">8858</div><div class="email-text">thmhl15@gmail.com</div><div class="card-actions"><a href="https://wa.me/9728858" target="_blank" class="btn-card btn-whatsapp">וואטסאפ</a><a href="mailto:thmhl15@gmail.com" class="btn-card btn-email">מייל</a></div></div>
+
+            <div class="person-card" data-name="יאיר מוריאל" data-city="נתניה"><div class="avatar-circle">י.מ</div><div class="person-name">יאיר מוריאל</div><div class="tags-container"><span class="tag">📍 נתניה</span></div><div class="phone-section">טלפון:</div><div class="phone-number">8838</div><div class="email-text">אין מייל</div><div class="card-actions"><a href="https://wa.me/9728838" target="_blank" class="btn-card btn-whatsapp" style="flex:100%;">וואטסאפ</a></div></div>
+
+            <div class="person-card" data-name="שמוליק נאבול" data-city="כפ"ח"><div class="avatar-circle">ש.נ</div><div class="person-name">שמוליק נאבול</div><div class="tags-container"><span class="tag">📍 כפ"ח</span></div><div class="phone-section">טלפון:</div><div class="phone-number">8865</div><div class="email-text">אין מייל</div><div class="card-actions"><a href="https://wa.me/9728865" target="_blank" class="btn-card btn-whatsapp" style="flex:100%;">וואטסאפ</a></div></div>
+
+            <div class="person-card" data-name="לוי סויסא" data-city="כפ"ח"><div class="avatar-circle">ל.ס</div><div class="person-name">לוי סויסא</div><div class="tags-container"><span class="tag">📍 כפ"ח</span></div><div class="phone-section">טלפון:</div><div class="phone-number">8052</div><div class="email-text">leyvisvisa770@gmail.com</div><div class="card-actions"><a href="https://wa.me/9728052" target="_blank" class="btn-card btn-whatsapp">וואטסאפ</a><a href="mailto:leyvisvisa770@gmail.com" class="btn-card btn-email">מייל</a></div></div>
+
+            <div class="person-card" data-name="שמואל קוביטשעק" data-city="כפ"ח"><div class="avatar-circle">ש.ק</div><div class="person-name">שמואל קוביטשעק</div><div class="tags-container"><span class="tag">📍 כפ"ח</span></div><div class="phone-section">טלפון:</div><div class="phone-number">8833</div><div class="email-text">אין מייל</div><div class="card-actions"><a href="https://wa.me/9728833" target="_blank" class="btn-card btn-whatsapp" style="flex:100%;">וואטסאפ</a></div></div>
+
+            <div class="person-card" data-name="זושא ריבקין" data-city="כפ"ח"><div class="avatar-circle">ז.ר</div><div class="person-name">זושא ריבקין</div><div class="tags-container"><span class="tag">📍 כפ"ח</span></div><div class="phone-section">טלפון:</div><div class="phone-number">8907</div><div class="email-text">z0555068907@gmail.com</div><div class="card-actions"><a href="https://wa.me/9728907" target="_blank" class="btn-card btn-whatsapp">וואטסאפ</a><a href="mailto:z0555068907@gmail.com" class="btn-card btn-email">מייל</a></div></div>
+
+            <div class="person-card" data-name="ישרוליק שטרסברג" data-city="כפ"ח"><div class="avatar-circle">י.ש</div><div class="person-name">ישרוליק שטרסברג</div><div class="tags-container"><span class="tag">📍 כפ"ח</span></div><div class="phone-section">טלפון:</div><div class="phone-number">9908</div><div class="email-text">אין מייל</div><div class="card-actions"><a href="https://wa.me/9729908" target="_blank" class="btn-card btn-whatsapp" style="flex:100%;">וואטסאפ</a></div></div>
+
+            <div class="person-card" data-name="ארי נוימן" data-city="מודיעין מכבים רעות"><div class="avatar-circle">א.נ</div><div class="person-name">ארי נוימן</div><div class="tags-container"><span class="tag">📍 מודיעין מכבים רעות</span></div><div class="phone-section">טלפון:</div><div class="phone-number">8897</div><div class="email-text">trhbuhni@gmail.com</div><div class="card-actions"><a href="https://wa.me/9728897" target="_blank" class="btn-card btn-whatsapp">וואטסאפ</a><a href="mailto:trhbuhni@gmail.com" class="btn-card btn-email">מייל</a></div></div>
+
+            <div class="person-card" data-name="מענדי אלפרוביץ" data-city="ראשל"צ"><div class="avatar-circle">מ.א</div><div class="person-name">מענדי אלפרוביץ</div><div class="tags-container"><span class="tag">📍 ראשל"צ</span></div><div class="phone-section">טלפון:</div><div class="phone-number">8810</div><div class="email-text">אין מייל</div><div class="card-actions"><a href="https://wa.me/9728810" target="_blank" class="btn-card btn-whatsapp" style="flex:100%;">וואטסאפ</a></div></div>
+
+            <div class="person-card" data-name="שניאור אלפרוביץ" data-city="כפ"ח"><div class="avatar-circle">ש.א</div><div class="person-name">שניאור אלפרוביץ</div><div class="tags-container"><span class="tag">📍 כפ"ח</span></div><div class="phone-section">טלפון:</div><div class="phone-number">8850</div><div class="email-text">אין מייל</div><div class="card-actions"><a href="https://wa.me/9728850" target="_blank" class="btn-card btn-whatsapp" style="flex:100%;">וואטסאפ</a></div></div>
+
+            <div class="person-card" data-name="מאיר אייזנבאך" data-city="כפ"ח"><div class="avatar-circle">מ.א</div><div class="person-name">מאיר אייזנבאך</div><div class="tags-container"><span class="tag">📍 כפ"ח</span></div><div class="phone-section">טלפון:</div><div class="phone-number">8313</div><div class="email-text">אין מייל</div><div class="card-actions"><a href="https://wa.me/9728313" target="_blank" class="btn-card btn-whatsapp" style="flex:100%;">וואטסאפ</a></div></div>
+
+            <div class="person-card" data-name="ישראליק בנדטוביץ" data-city="כפ"ח"><div class="avatar-circle">י.ב</div><div class="person-name">ישראליק בנדטוביץ</div><div class="tags-container"><span class="tag">📍 כפ"ח</span></div><div class="phone-section">טלפון:</div><div class="phone-number">9530</div><div class="email-text">אין מייל</div><div class="card-actions"><a href="https://wa.me/9729530" target="_blank" class="btn-card btn-whatsapp" style="flex:100%;">וואטסאפ</a></div></div>
+
+            <div class="person-card" data-name="אודי לוין" data-city="לוד"><div class="avatar-circle">א.ל</div><div class="person-name">אודי לוין</div><div class="tags-container"><span class="tag">📍 לוד</span></div><div class="phone-section">טלפון:</div><div class="phone-number">8860</div><div class="email-text">zami.lev770@gmail.com</div><div class="card-actions"><a href="https://wa.me/9728860" target="_blank" class="btn-card btn-whatsapp">וואטסאפ</a><a href="mailto:zami.lev770@gmail.com" class="btn-card btn-email">מייל</a></div></div>
+
+            <div class="person-card" data-name="שניאור הלפרין" data-city="גבעת זאב"><div class="avatar-circle">ש.ה</div><div class="person-name">שניאור הלפרין</div><div class="tags-container"><span class="tag">📍 גבעת זאב</span></div><div class="phone-section">טלפון:</div><div class="phone-number">8851</div><div class="email-text">אין מייל</div><div class="card-actions"><a href="https://wa.me/9728851" target="_blank" class="btn-card btn-whatsapp" style="flex:100%;">וואטסאפ</a></div></div>
+
+            <div class="person-card" data-name="שולם ליברמן" data-city="אלעד"><div class="avatar-circle">ש.ל</div><div class="person-name">שולם ליברמן</div><div class="tags-container"><span class="tag">📍 אלעד</span></div><div class="phone-section">טלפון:</div><div class="phone-number">8455</div><div class="email-text">sholemlib@gmail.com</div><div class="card-actions"><a href="https://wa.me/9728455" target="_blank" class="btn-card btn-whatsapp">וואטסאפ</a><a href="mailto:sholemlib@gmail.com" class="btn-card btn-email">מייל</a></div></div>
+
+            <div class="person-card" data-name="שלומי לנדמן" data-city="ירושלים"><div class="avatar-circle">ש.ל</div><div class="person-name">שלומי לנדמן</div><div class="tags-container"><span class="tag">📍 ירושלים</span></div><div class="phone-section">טלפון:</div><div class="phone-number">8857</div><div class="email-text">shlomo8857@gmail.com</div><div class="card-actions"><a href="https://wa.me/9728857" target="_blank" class="btn-card btn-whatsapp">וואטסאפ</a><a href="mailto:shlomo8857@gmail.com" class="btn-card btn-email">מייל</a></div></div>
+
+            <div class="person-card" data-name="ארי שוורץ" data-city="אילת"><div class="avatar-circle">א.ש</div><div class="person-name">ארי שוורץ</div><div class="tags-container"><span class="tag">📍 אילת</span></div><div class="phone-section">טלפון:</div><div class="phone-number">8800</div><div class="email-text">arishwartz818@gmail.com</div><div class="card-actions"><a href="https://wa.me/9728800" target="_blank" class="btn-card btn-whatsapp">וואטסאפ</a><a href="mailto:arishwartz818@gmail.com" class="btn-card btn-email">מייל</a></div></div>
+
+            <div class="person-card" data-name="ישראל ליצמן" data-city="ביתר עילית"><div class="avatar-circle">י.ל</div><div class="person-name">ישראל ליצמן</div><div class="tags-container"><span class="tag">📍 ביתר עילית</span></div><div class="phone-section">טלפון:</div><div class="phone-number">8902</div><div class="email-text">אין מייל</div><div class="card-actions"><a href="https://wa.me/9728902" target="_blank" class="btn-card btn-whatsapp" style="flex:100%;">וואטסאפ</a></div></div>
+
+            <div class="person-card" data-name="לוי העכט" data-city="מגדל העמק"><div class="avatar-circle">ל.ה</div><div class="person-name">לוי העכט</div><div class="tags-container"><span class="tag">📍 מגדל העמק</span></div><div class="phone-section">טלפון:</div><div class="phone-number">8103</div><div class="email-text">אין מייל</div><div class="card-actions"><a href="https://wa.me/9728103" target="_blank" class="btn-card btn-whatsapp" style="flex:100%;">וואטסאפ</a></div></div>
+
+            <div class="person-card" data-name="מענדי נפתלין" data-city="קרית גת"><div class="avatar-circle">מ.נ</div><div class="person-name">מענדי נפתלין</div><div class="tags-container"><span class="tag">📍 קרית גת</span></div><div class="phone-section">טלפון:</div><div class="phone-number">8892</div><div class="email-text">אין מייל</div><div class="card-actions"><a href="https://wa.me/9728892" target="_blank" class="btn-card btn-whatsapp" style="flex:100%;">וואטסאפ</a></div></div>
+
+            <div class="person-card" data-name="שניאור אלטרס" data-city="נס ציונה"><div class="avatar-circle">ש.א</div><div class="person-name">שניאור אלטרס</div><div class="tags-container"><span class="tag">📍 נס ציונה</span></div><div class="phone-section">טלפון:</div><div class="phone-number">8849</div><div class="email-text">אין מייל</div><div class="card-actions"><a href="https://wa.me/9728849" target="_blank" class="btn-card btn-whatsapp" style="flex:100%;">וואטסאפ</a></div></div>
+
+            <div class="person-card" data-name="ישראל מוזגורלשוילי" data-city="לוד"><div class="avatar-circle">י.מ</div><div class="person-name">ישראל מוזגורלשוילי</div><div class="tags-container"><span class="tag">📍 לוד</span></div><div class="phone-section">טלפון:</div><div class="phone-number">9778</div><div class="email-text">770mmmf770@gmail.com</div><div class="card-actions"><a href="https://wa.me/9729778" target="_blank" class="btn-card btn-whatsapp">וואטסאפ</a><a href="mailto:770mmmf770@gmail.com" class="btn-card btn-email">מייל</a></div></div>
+
+            <div class="person-card" data-name="שניאור ברוד" data-city="לוד"><div class="avatar-circle">ש.ב</div><div class="person-name">שניאור ברוד</div><div class="tags-container"><span class="tag">📍 לוד</span></div><div class="phone-section">טלפון:</div><div class="phone-number">8861</div><div class="email-text">brodshneur@gmail.com</div><div class="card-actions"><a href="https://wa.me/9728861" target="_blank" class="btn-card btn-whatsapp">וואטסאפ</a><a href="mailto:brodshneur@gmail.com" class="btn-card btn-email">מייל</a></div></div>
+
+            <div class="person-card" data-name="שניאור נאבול" data-city="כפ"ח"><div class="avatar-circle">ש.נ</div><div class="person-name">שניאור נאבול</div><div class="tags-container"><span class="tag">📍 כפ"ח</span></div><div class="phone-section">טלפון:</div><div class="phone-number">8881</div><div class="email-text">אין מייל</div><div class="card-actions"><a href="https://wa.me/9728881" target="_blank" class="btn-card btn-whatsapp" style="flex:100%;">וואטסאפ</a></div></div>
+
+            <div class="person-card" data-name="שניאור דרוק" data-city="כפ"ח"><div class="avatar-circle">ש.ד</div><div class="person-name">שניאור דרוק</div><div class="tags-container"><span class="tag">📍 כפ"ח</span></div><div class="phone-section">טלפון:</div><div class="phone-number">8836</div><div class="email-text">אין מייל</div><div class="card-actions"><a href="https://wa.me/9728836" target="_blank" class="btn-card btn-whatsapp" style="flex:100%;">וואטסאפ</a></div></div>
+
+            <div class="person-card" data-name="אשר וילהלם" data-city="בני ברק"><div class="avatar-circle">א.ו</div><div class="person-name">אשר וילהלם</div><div class="tags-container"><span class="tag">📍 בני ברק</span></div><div class="phone-section">טלפון:</div><div class="phone-number">8801</div><div class="email-text">a770r770@gmail.com</div><div class="card-actions"><a href="https://wa.me/9728801" target="_blank" class="btn-card btn-whatsapp">וואטסאפ</a><a href="mailto:a770r770@gmail.com" class="btn-card btn-email">מייל</a></div></div>
+
+            <div class="person-card" data-name="קוביטשעק מ"מ" data-city="כפ"ח"><div class="avatar-circle">ק.מ</div><div class="person-name">קוביטשעק מ"מ</div><div class="tags-container"><span class="tag">📍 כפ"ח</span></div><div class="phone-section">טלפון:</div><div class="phone-number">8833</div><div class="email-text">אין מייל</div><div class="card-actions"><a href="https://wa.me/9728833" target="_blank" class="btn-card btn-whatsapp" style="flex:100%;">וואטסאפ</a></div></div>
+
+            <div class="person-card" data-name="אביוב ישראל אריה לייב" data-city="קריות"><div class="avatar-circle">א.י</div><div class="person-name">אביוב ישראל אריה לייב</div><div class="tags-container"><span class="tag">📍 קריות</span></div><div class="phone-section">טלפון:</div><div class="phone-number">8908</div><div class="email-text">אין מייל</div><div class="card-actions"><a href="https://wa.me/9728908" target="_blank" class="btn-card btn-whatsapp" style="flex:100%;">וואטסאפ</a></div></div>
+
+            <div class="person-card" data-name="אבייב נוריאל" data-city="רמת השרון"><div class="avatar-circle">א.נ</div><div class="person-name">אבייב נוריאל</div><div class="tags-container"><span class="tag">📍 רמת השרון</span></div><div class="phone-section">טלפון:</div><div class="phone-number">9617</div><div class="email-text">nurielabaiov770@gmail.com</div><div class="card-actions"><a href="https://wa.me/9729617" target="_blank" class="btn-card btn-whatsapp">וואטסאפ</a><a href="mailto:nurielabaiov770@gmail.com" class="btn-card btn-email">מייל</a></div></div>
+
+            <div class="person-card" data-name="אלבוים דב בער" data-city="ביתר עילית"><div class="avatar-circle">א.ד</div><div class="person-name">אלבוים דב בער</div><div class="tags-container"><span class="tag">📍 ביתר עילית</span></div><div class="phone-section">טלפון:</div><div class="phone-number">8822</div><div class="email-text">אין מייל</div><div class="card-actions"><a href="https://wa.me/9728822" target="_blank" class="btn-card btn-whatsapp" style="flex:100%;">וואטסאפ</a></div></div>
+
+            <div class="person-card" data-name="גופין לוי יצחק" data-city="קריות"><div class="avatar-circle">ג.ל</div><div class="person-name">גופין לוי יצחק</div><div class="tags-container"><span class="tag">📍 קריות</span></div><div class="phone-section">טלפון:</div><div class="phone-number">8164</div><div class="email-text">אין מייל</div><div class="card-actions"><a href="https://wa.me/9728164" target="_blank" class="btn-card btn-whatsapp" style="flex:100%;">וואטסאפ</a></div></div>
+
+            <div class="person-card" data-name="גרשוני שמעון" data-city="פתח תקווה"><div class="avatar-circle">ג.ש</div><div class="person-name">גרשוני שמעון</div><div class="tags-container"><span class="tag">📍 פתח תקווה</span></div><div class="phone-section">טלפון:</div><div class="phone-number">8873</div><div class="email-text">gershuni10@gmail.com</div><div class="card-actions"><a href="https://wa.me/9728873" target="_blank" class="btn-card btn-whatsapp">וואטסאפ</a><a href="mailto:gershuni10@gmail.com" class="btn-card btn-email">מייל</a></div></div>
+
+            <div class="person-card" data-name="דיין נועם ישראל" data-city="לוד"><div class="avatar-circle">ד.נ</div><div class="person-name">דיין נועם ישראל</div><div class="tags-container"><span class="tag">📍 לוד</span></div><div class="phone-section">טלפון:</div><div class="phone-number">8989</div><div class="email-text">dayannoam1234@gmail.com</div><div class="card-actions"><a href="https://wa.me/9728989" target="_blank" class="btn-card btn-whatsapp">וואטסאפ</a><a href="mailto:dayannoam1234@gmail.com" class="btn-card btn-email">מייל</a></div></div>
+
+            <div class="person-card" data-name="מנדלסון לוי יצחק" data-city="בית שמש"><div class="avatar-circle">מ.ל</div><div class="person-name">מנדלסון לוי יצחק</div><div class="tags-container"><span class="tag">📍 בית שמש</span></div><div class="phone-section">טלפון:</div><div class="phone-number">8826</div><div class="email-text">אין מייל</div><div class="card-actions"><a href="https://wa.me/9728826" target="_blank" class="btn-card btn-whatsapp" style="flex:100%;">וואטסאפ</a></div></div>
+
+            <div class="person-card" data-name="ירט מנחם מענדל" data-city="כפ"ח"><div class="avatar-circle">י.מ</div><div class="person-name">ירט מנחם מענדל</div><div class="tags-container"><span class="tag">📍 כפ"ח</span></div><div class="phone-section">טלפון:</div><div class="phone-number">554415853</div><div class="email-text">אין מייל</div><div class="card-actions"><a href="https://wa.me/972554415853" target="_blank" class="btn-card btn-whatsapp" style="flex:100%;">וואטסאפ</a></div></div>
+
+            <div class="person-card" data-name="מרגלית צבי שניאור זלמן" data-city="פתח תקווה"><div class="avatar-circle">מ.צ</div><div class="person-name">מרגלית צבי שניאור זלמן</div><div class="tags-container"><span class="tag">📍 פתח תקווה</span></div><div class="phone-section">טלפון:</div><div class="phone-number">8809</div><div class="email-text">m0547659060@gmail.com</div><div class="card-actions"><a href="https://wa.me/9728809" target="_blank" class="btn-card btn-whatsapp">וואטסאפ</a><a href="mailto:m0547659060@gmail.com" class="btn-card btn-email">מייל</a></div></div>
+
+            <div class="person-card" data-name="מרילוס צבי" data-city="פתח תקווה"><div class="avatar-circle">מ.צ</div><div class="person-name">מרילוס צבי</div><div class="tags-container"><span class="tag">📍 פתח תקווה</span></div><div class="phone-section">טלפון:</div><div class="phone-number">8804</div><div class="email-text">אין מייל</div><div class="card-actions"><a href="https://wa.me/9728804" target="_blank" class="btn-card btn-whatsapp" style="flex:100%;">וואטסאפ</a></div></div>
+
+            <div class="person-card" data-name="סגל מנחם מענדל" data-city="ביתר עילית"><div class="avatar-circle">ס.מ</div><div class="person-name">סגל מנחם מענדל</div><div class="tags-container"><span class="tag">📍 ביתר עילית</span></div><div class="phone-section">טלפון:</div><div class="phone-number">8883</div><div class="email-text">msegal911@gmail.com</div><div class="card-actions"><a href="https://wa.me/9728883" target="_blank" class="btn-card btn-whatsapp">וואטסאפ</a><a href="mailto:msegal911@gmail.com" class="btn-card btn-email">מייל</a></div></div>
+
+            <div class="person-card" data-name="פבזנר מנחם מענדל" data-city="ביתר עילית"><div class="avatar-circle">פ.מ</div><div class="person-name">פבזנר מנחם מענדל</div><div class="tags-container"><span class="tag">📍 ביתר עילית</span></div><div class="phone-section">טלפון:</div><div class="phone-number">9968</div><div class="email-text">אין מייל</div><div class="card-actions"><a href="https://wa.me/9729968" target="_blank" class="btn-card btn-whatsapp" style="flex:100%;">וואטסאפ</a></div></div>
+
+            <div class="person-card" data-name="קוט מאיר" data-city="קריות"><div class="avatar-circle">ק.מ</div><div class="person-name">קוט מאיר</div><div class="tags-container"><span class="tag">📍 קריות</span></div><div class="phone-section">טלפון:</div><div class="phone-number">8828</div><div class="email-text">אין מייל</div><div class="card-actions"><a href="https://wa.me/9728828" target="_blank" class="btn-card btn-whatsapp" style="flex:100%;">וואטסאפ</a></div></div>
+
+            <div class="person-card" data-name="קניבסקי שמואל" data-city="בני ברק"><div class="avatar-circle">ק.ש</div><div class="person-name">קניבסקי שמואל</div><div class="tags-container"><span class="tag">📍 בני ברק</span></div><div class="phone-section">טלפון:</div><div class="phone-number">8863</div><div class="email-text">samuelk5040@gmail.com</div><div class="card-actions"><a href="https://wa.me/9728863" target="_blank" class="btn-card btn-whatsapp">וואטסאפ</a><a href="mailto:samuelk5040@gmail.com" class="btn-card btn-email">מייל</a></div></div>
+
+            <div class="person-card" data-name="ריפקין מנחם מענדל" data-city="ביתר עילית"><div class="avatar-circle">ר.מ</div><div class="person-name">ריפקין מנחם מענדל</div><div class="tags-container"><span class="tag">📍 ביתר עילית</span></div><div class="phone-section">טלפון:</div><div class="phone-number">8871</div><div class="email-text">mendi8871@gmail.com</div><div class="card-actions"><a href="https://wa.me/9728871" target="_blank" class="btn-card btn-whatsapp">וואטסאפ</a><a href="mailto:mendi8871@gmail.com" class="btn-card btn-email">מייל</a></div></div>
+
+            <div class="person-card" data-name="רייצעס ישעיה אוורי" data-city="תל אביב"><div class="avatar-circle">ר.י</div><div class="person-name">רייצעס ישעיה אוורי</div><div class="tags-container"><span class="tag">📍 תל אביב</span></div><div class="phone-section">טלפון:</div><div class="phone-number">9909</div><div class="email-text">אין מייל</div><div class="card-actions"><a href="https://wa.me/9729909" target="_blank" class="btn-card btn-whatsapp" style="flex:100%;">וואטסאפ</a></div></div>
+
+            <div class="person-card" data-name="שוורץ מנחם מענדל" data-city="ביתר עילית"><div class="avatar-circle">ש.מ</div><div class="person-name">שוורץ מנחם מענדל</div><div class="tags-container"><span class="tag">📍 ביתר עילית</span></div><div class="phone-section">טלפון:</div><div class="phone-number">8844</div><div class="email-text">menish2020@gmail.com</div><div class="card-actions"><a href="https://wa.me/9728844" target="_blank" class="btn-card btn-whatsapp">וואטסאפ</a><a href="mailto:menish2020@gmail.com" class="btn-card btn-email">מייל</a></div></div>
+
+            <div class="person-card" data-name="שניידר מנחם מענדל" data-city="ביתר עילית"><div class="avatar-circle">ש.מ</div><div class="person-name">שניידר מנחם מענדל</div><div class="tags-container"><span class="tag">📍 ביתר עילית</span></div><div class="phone-section">טלפון:</div><div class="phone-number">8830</div><div class="email-text">אין מייל</div><div class="card-actions"><a href="https://wa.me/9728830" target="_blank" class="btn-card btn-whatsapp" style="flex:100%;">וואטסאפ</a></div></div>
+
+            <div class="person-card" data-name="בארנס לוי יצחק" data-city="כפ"ח"><div class="avatar-circle">ב.ל</div><div class="person-name">בארנס לוי יצחק</div><div class="tags-container"><span class="tag">📍 כפ"ח</span></div><div class="phone-section">טלפון:</div><div class="phone-number">8859</div><div class="email-text">אין מייל</div><div class="card-actions"><a href="https://wa.me/9728859" target="_blank" class="btn-card btn-whatsapp" style="flex:100%;">וואטסאפ</a></div></div>
+
+            <div class="person-card" data-name="שיינר יוסף" data-city="כפ"ח"><div class="avatar-circle">ש.י</div><div class="person-name">שיינר יוסף</div><div class="tags-container"><span class="tag">📍 כפ"ח</span></div><div class="phone-section">טלפון:</div><div class="phone-number">8818</div><div class="email-text">אין מייל</div><div class="card-actions"><a href="https://wa.me/9728818" target="_blank" class="btn-card btn-whatsapp" style="flex:100%;">וואטסאפ</a></div></div>
+
+            <div class="person-card" data-name="דרורי מנחם מנדל" data-city="אחיסמך"><div class="avatar-circle">ד.מ</div><div class="person-name">דרורי מנחם מנדל</div><div class="tags-container"><span class="tag">📍 אחיסמך</span></div><div class="phone-section">טלפון:</div><div class="phone-number">8831</div><div class="email-text">אין מייל</div><div class="card-actions"><a href="https://wa.me/9728831" target="_blank" class="btn-card btn-whatsapp" style="flex:100%;">וואטסאפ</a></div></div>
+
+            <div class="person-card" data-name="הרטמן יונתן" data-city="לוד"><div class="avatar-circle">ה.י</div><div class="person-name">הרטמן יונתן</div><div class="tags-container"><span class="tag">📍 לוד</span></div><div class="phone-section">טלפון:</div><div class="phone-number">559399123</div><div class="email-text">אין מייל</div><div class="card-actions"><a href="https://wa.me/972559399123" target="_blank" class="btn-card btn-whatsapp" style="flex:100%;">וואטסאפ</a></div></div>
+
+            <div class="person-card" data-name="דהן יוסף" data-city="כפ"ח"><div class="avatar-circle">ד.י</div><div class="person-name">דהן יוסף</div><div class="tags-container"><span class="tag">📍 כפ"ח</span></div><div class="phone-section">טלפון:</div><div class="phone-number">8872</div><div class="email-text">yosefdahan771@gmail.com</div><div class="card-actions"><a href="https://wa.me/9728872" target="_blank" class="btn-card btn-whatsapp">וואטסאפ</a><a href="mailto:yosefdahan771@gmail.com" class="btn-card btn-email">מייל</a></div></div>
+
+            <div class="person-card" data-name="ישראלי נהוראי" data-city="חשמונאים"><div class="avatar-circle">י.נ</div><div class="person-name">ישראלי נהוראי</div><div class="tags-container"><span class="tag">📍 חשמונאים</span></div><div class="phone-section">טלפון:</div><div class="phone-number">8852</div><div class="email-text">אין מייל</div><div class="card-actions"><a href="https://wa.me/9728852" target="_blank" class="btn-card btn-whatsapp" style="flex:100%;">וואטסאפ</a></div></div>
+
+            <div class="person-card" data-name="סלונים ישראל" data-city="ירושלים"><div class="avatar-circle">ס.י</div><div class="person-name">סלונים ישראל</div><div class="tags-container"><span class="tag">📍 ירושלים</span></div><div class="phone-section">טלפון:</div><div class="phone-number">8895</div><div class="email-text">אין מייל</div><div class="card-actions"><a href="https://wa.me/9728895" target="_blank" class="btn-card btn-whatsapp" style="flex:100%;">וואטסאפ</a></div></div>
+
+            <div class="person-card" data-name="עידה יוסף יצחק" data-city="כפ"ח"><div class="avatar-circle">ע.י</div><div class="person-name">עידה יוסף יצחק</div><div class="tags-container"><span class="tag">📍 כפ"ח</span></div><div class="phone-section">טלפון:</div><div class="phone-number">8835</div><div class="email-text">אין מייל</div><div class="card-actions"><a href="https://wa.me/9728835" target="_blank" class="btn-card btn-whatsapp" style="flex:100%;">וואטסאפ</a></div></div>
+
+            <div class="person-card" data-name="חמו אורי מרדכי" data-city="לוד"><div class="avatar-circle">ח.א</div><div class="person-name">חמו אורי מרדכי</div><div class="tags-container"><span class="tag">📍 לוד</span></div><div class="phone-section">טלפון:</div><div class="phone-number">9536</div><div class="email-text">אין מייל</div><div class="card-actions"><a href="https://wa.me/9729536" target="_blank" class="btn-card btn-whatsapp" style="flex:100%;">וואטסאפ</a></div></div>
+
+            <div class="person-card" data-name="יורקוביץ יעקב בן ציון" data-city="לוד"><div class="avatar-circle">י.י</div><div class="person-name">יורקוביץ יעקב בן ציון</div><div class="tags-container"><span class="tag">📍 לוד</span></div><div class="phone-section">טלפון:</div><div class="phone-number">9540</div><div class="email-text">אין מייל</div><div class="card-actions"><a href="https://wa.me/9729540" target="_blank" class="btn-card btn-whatsapp" style="flex:100%;">וואטסאפ</a></div></div>
+
+            <div class="person-card" data-name="צור מנחם מענדל" data-city="ירושלים"><div class="avatar-circle">צ.מ</div><div class="person-name">צור מנחם מענדל</div><div class="tags-container"><span class="tag">📍 ירושלים</span></div><div class="phone-section">טלפון:</div><div class="phone-number">8837</div><div class="email-text">אין מייל</div><div class="card-actions"><a href="https://wa.me/9728837" target="_blank" class="btn-card btn-whatsapp" style="flex:100%;">וואטסאפ</a></div></div>
+
+            <div class="person-card" data-name="קוגן אברהם" data-city="רחובות"><div class="avatar-circle">ק.א</div><div class="person-name">קוגן אברהם</div><div class="tags-container"><span class="tag">📍 רחובות</span></div><div class="phone-section">טלפון:</div><div class="phone-number">8821</div><div class="email-text">avikogan770@gmail.com</div><div class="card-actions"><a href="https://wa.me/9728821" target="_blank" class="btn-card btn-whatsapp">וואטסאפ</a><a href="mailto:avikogan770@gmail.com" class="btn-card btn-email">מייל</a></div></div>
+
+            <div class="person-card" data-name="אלון גראמנסקי" data-city="לוד"><div class="avatar-circle">א.ג</div><div class="person-name">אלון גראמנסקי</div><div class="tags-container"><span class="tag">📍 לוד</span></div><div class="phone-section">טלפון:</div><div class="phone-number">אין טלפון</div><div class="email-text">אין מייל</div><div class="card-actions"><span class="btn-card" style="background:#cbd5e1; color:#64748b; cursor:not-allowed; flex:100%;">אין טלפון</span></div></div>
+
+            <div class="person-card" data-name="לוריא מנחם מנדל" data-city="לוד"><div class="avatar-circle">ל.מ</div><div class="person-name">לוריא מנחם מנדל</div><div class="tags-container"><span class="tag">📍 לוד</span></div><div class="phone-section">טלפון:</div><div class="phone-number">8814</div><div class="email-text">chavilev@gmail.com</div><div class="card-actions"><a href="https://wa.me/9728814" target="_blank" class="btn-card btn-whatsapp">וואטסאפ</a><a href="mailto:chavilev@gmail.com" class="btn-card btn-email">מייל</a></div></div>
+
+            <div class="person-card" data-name="לוין אפרים יהודה" data-city="לוד"><div class="avatar-circle">ל.א</div><div class="person-name">לוין אפרים יהודה</div><div class="tags-container"><span class="tag">📍 לוד</span></div><div class="phone-section">טלפון:</div><div class="phone-number">8860</div><div class="email-text">zami.lev770@gmail.com</div><div class="card-actions"><a href="https://wa.me/9728860" target="_blank" class="btn-card btn-whatsapp">וואטסאפ</a><a href="mailto:zami.lev770@gmail.com" class="btn-card btn-email">מייל</a></div></div>
+
+            <div class="person-card" data-name="זלמנוב נעם" data-city="לוד"><div class="avatar-circle">ז.נ</div><div class="person-name">זלמנוב נעם</div><div class="tags-container"><span class="tag">📍 לוד</span></div><div class="phone-section">טלפון:</div><div class="phone-number">8032</div><div class="email-text">noamzel100@gmail.com</div><div class="card-actions"><a href="https://wa.me/9728032" target="_blank" class="btn-card btn-whatsapp">וואטסאפ</a><a href="mailto:noamzel100@gmail.com" class="btn-card btn-email">מייל</a></div></div>
+
+            <div class="person-card" data-name="מעטוף מנחם מענדל מאיר" data-city="לוד"><div class="avatar-circle">מ.מ</div><div class="person-name">מעטוף מנחם מענדל מאיר</div><div class="tags-container"><span class="tag">📍 לוד</span></div><div class="phone-section">טלפון:</div><div class="phone-number">8811</div><div class="email-text">אין מייל</div><div class="card-actions"><a href="https://wa.me/9728811" target="_blank" class="btn-card btn-whatsapp" style="flex:100%;">וואטסאפ</a></div></div>
+
+            <div class="person-card" data-name="מנדלזון שמואל" data-city="נחלת הר חב"ד"><div class="avatar-circle">מ.ש</div><div class="person-name">מנדלזון שמואל</div><div class="tags-container"><span class="tag">📍 נחלת הר חב"ד</span></div><div class="phone-section">טלפון:</div><div class="phone-number">8855</div><div class="email-text">mulimen770@gmail.com</div><div class="card-actions"><a href="https://wa.me/9728855" target="_blank" class="btn-card btn-whatsapp">וואטסאפ</a><a href="mailto:mulimen770@gmail.com" class="btn-card btn-email">מייל</a></div></div>
+
+            <div class="person-card" data-name="זאביק ליפסקר" data-city="לוד"><div class="avatar-circle">ז.ל</div><div class="person-name">זאביק ליפסקר</div><div class="tags-container"><span class="tag">📍 לוד</span></div><div class="phone-section">טלפון:</div><div class="phone-number">7967</div><div class="email-text">zeviklipsker@gmail.com</div><div class="card-actions"><a href="https://wa.me/9727967" target="_blank" class="btn-card btn-whatsapp">וואטסאפ</a><a href="mailto:zeviklipsker@gmail.com" class="btn-card btn-email">מייל</a></div></div>
+
+            <div class="person-card" data-name="מוישי אשכנזי" data-city="רשל"צ"><div class="avatar-circle">מ.א</div><div class="person-name">מוישי אשכנזי</div><div class="tags-container"><span class="tag">📍 רשל"צ</span></div><div class="phone-section">טלפון:</div><div class="phone-number">8862</div><div class="email-text">a039587804@gmail.com</div><div class="card-actions"><a href="https://wa.me/9728862" target="_blank" class="btn-card btn-whatsapp">וואטסאפ</a><a href="mailto:a039587804@gmail.com" class="btn-card btn-email">מייל</a></div></div>
+
+            <div class="person-card" data-name="גולדברג מנחם מענדל" data-city="לוד"><div class="avatar-circle">ג.מ</div><div class="person-name">גולדברג מנחם מענדל</div><div class="tags-container"><span class="tag">📍 לוד</span></div><div class="phone-section">טלפון:</div><div class="phone-number">8848</div><div class="email-text">אין מייל</div><div class="card-actions"><a href="https://wa.me/9728848" target="_blank" class="btn-card btn-whatsapp" style="flex:100%;">וואטסאפ</a></div></div>
+
+            <div class="person-card" data-name="הלפרין לוי" data-city="ביתר עילית"><div class="avatar-circle">ה.ל</div><div class="person-name">הלפרין לוי</div><div class="tags-container"><span class="tag">📍 ביתר עילית</span></div><div class="phone-section">טלפון:</div><div class="phone-number">554415180</div><div class="email-text">אין מייל</div><div class="card-actions"><a href="https://wa.me/972554415180" target="_blank" class="btn-card btn-whatsapp" style="flex:100%;">וואטסאפ</a></div></div>
+
+            <div class="person-card" data-name="זאיאנץ חיים זעליג" data-city="מגדל העמק"><div class="avatar-circle">ז.ח</div><div class="person-name">זאיאנץ חיים זעליג</div><div class="tags-container"><span class="tag">📍 מגדל העמק</span></div><div class="phone-section">טלפון:</div><div class="phone-number">9763</div><div class="email-text">אין מייל</div><div class="card-actions"><a href="https://wa.me/9729763" target="_blank" class="btn-card btn-whatsapp" style="flex:100%;">וואטסאפ</a></div></div>
+
+            <div class="person-card" data-name="טורנהיים משה יהושע" data-city="ערד"><div class="avatar-circle">ט.מ</div><div class="person-name">טורנהיים משה יהושע</div><div class="tags-container"><span class="tag">📍 ערד</span></div><div class="phone-section">טלפון:</div><div class="phone-number">8813</div><div class="email-text">avrhamt@gmail.com</div><div class="card-actions"><a href="https://wa.me/9728813" target="_blank" class="btn-card btn-whatsapp">וואטסאפ</a><a href="mailto:avrhamt@gmail.com" class="btn-card btn-email">מייל</a></div></div>
+
+            <div class="person-card" data-name="דובי ליפקין" data-city="לוד"><div class="avatar-circle">ד.ל</div><div class="person-name">דובי ליפקין</div><div class="tags-container"><span class="tag">📍 לוד</span></div><div class="phone-section">טלפון:</div><div class="phone-number">8845</div><div class="email-text">אין מייל</div><div class="card-actions"><a href="https://wa.me/9728845" target="_blank" class="btn-card btn-whatsapp" style="flex:100%;">וואטסאפ</a></div></div>
+
+            <div class="person-card" data-name="דובי מנדלסון" data-city="לוד"><div class="avatar-circle">ד.מ</div><div class="person-name">דובי מנדלסון</div><div class="tags-container"><span class="tag">📍 לוד</span></div><div class="phone-section">טלפון:</div><div class="phone-number">8827</div><div class="email-text">mendelsondubi@gmail.com</div><div class="card-actions"><a href="https://wa.me/9728827" target="_blank" class="btn-card btn-whatsapp">וואטסאפ</a><a href="mailto:mendelsondubi@gmail.com" class="btn-card btn-email">מייל</a></div></div>
+
+            <div class="person-card" data-name="קיי מנחם מענדל" data-city="קרית גת"><div class="avatar-circle">ק.מ</div><div class="person-name">קיי מנחם מענדל</div><div class="tags-container"><span class="tag">📍 קרית גת</span></div><div class="phone-section">טלפון:</div><div class="phone-number">8819</div><div class="email-text">אין מייל</div><div class="card-actions"><a href="https://wa.me/9728819" target="_blank" class="btn-card btn-whatsapp" style="flex:100%;">וואטסאפ</a></div></div>
+
+            <div class="person-card" data-name="מ"מ קרץ" data-city="עפולה"><div class="avatar-circle">מ.ק</div><div class="person-name">מ"מ קרץ</div><div class="tags-container"><span class="tag">📍 עפולה</span></div><div class="phone-section">טלפון:</div><div class="phone-number">8888</div><div class="email-text">אין מייל</div><div class="card-actions"><a href="https://wa.me/9728888" target="_blank" class="btn-card btn-whatsapp" style="flex:100%;">וואטסאפ</a></div></div>
+
+            <div class="person-card" data-name="דובער קעניג" data-city="מודיעין עילית"><div class="avatar-circle">ד.ק</div><div class="person-name">דובער קעניג</div><div class="tags-container"><span class="tag">📍 מודיעין עילית</span></div><div class="phone-section">טלפון:</div><div class="phone-number">9532</div><div class="email-text">אין מייל</div><div class="card-actions"><a href="https://wa.me/9729532" target="_blank" class="btn-card btn-whatsapp" style="flex:100%;">וואטסאפ</a></div></div>
+
+            <div class="person-card" data-name="ישראליק בוקיעט" data-city="חיפה"><div class="avatar-circle">י.ב</div><div class="person-name">ישראליק בוקיעט</div><div class="tags-container"><span class="tag">📍 חיפה</span></div><div class="phone-section">טלפון:</div><div class="phone-number">8901</div><div class="email-text">אין מייל</div><div class="card-actions"><a href="https://wa.me/9728901" target="_blank" class="btn-card btn-whatsapp" style="flex:100%;">וואטסאפ</a></div></div>
+
+        </div>
+
+    </div>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', () => {
+            const savedEmail = localStorage.getItem('remembered_email');
+            const savedPassword = localStorage.getItem('remembered_password');
+            if (savedEmail) {
+                document.getElementById('login-email').value = savedEmail;
+                document.getElementById('login-password').value = savedPassword || '';
+                document.getElementById('remember-me').checked = true;
+            }
+        });
+
+        function toggleAuthForms() {
+            document.getElementById('login-form').classList.toggle('hidden');
+            document.getElementById('signup-form').classList.toggle('hidden');
+        }
+
+        function handleLogin(event) {
+            event.preventDefault();
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+            const remember = document.getElementById('remember-me').checked;
+
+            if (remember) {
+                localStorage.setItem('remembered_email', email);
+                localStorage.setItem('remembered_password', password);
+            } else {
+                localStorage.removeItem('remembered_email');
+                localStorage.removeItem('remembered_password');
+            }
+
+            document.getElementById('auth-wrapper').classList.add('hidden');
+            document.getElementById('app-wrapper').classList.remove('hidden');
+        }
+
+        function handleSignup(event) {
+            event.preventDefault();
+            const name = document.getElementById('signup-name').value;
+            if(name) document.getElementById('username-display').innerText = name;
+            document.getElementById('auth-wrapper').classList.add('hidden');
+            document.getElementById('app-wrapper').classList.remove('hidden');
+        }
+
+        function handleLogout() {
+            document.getElementById('app-wrapper').classList.add('hidden');
+            document.getElementById('auth-wrapper').classList.remove('hidden');
+        }
+
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            document.documentElement.setAttribute('data-theme', currentTheme === 'dark' ? 'light' : 'dark');
+        }
+
+        function toggleAdminPanel() {
+            document.getElementById('admin-panel').classList.toggle('hidden');
+        }
+
+        function handleAddPerson(event) {
+            event.preventDefault();
+            const name = document.getElementById('new-name').value;
+            const city = document.getElementById('new-city').value;
+            const phone = document.getElementById('new-phone').value;
+            const email = document.getElementById('new-email').value;
+
+            const nameParts = name.trim().split(' ');
+            const initials = nameParts.length > 1 ? `${nameParts[0][0]}.${nameParts[1][0]}` : nameParts[0][0];
+
+            const cardsGrid = document.getElementById('cardsGrid');
+            const newCard = document.createElement('div');
+            newCard.className = 'person-card';
+            newCard.setAttribute('data-name', name);
+            newCard.setAttribute('data-city', city);
+
+            let actionsHtml = `<a href="https://wa.me/972${phone}" target="_blank" class="btn-card btn-whatsapp">וואטסאפ</a>`;
+            let emailHtml = '';
+
+            if (email) {
+                emailHtml = `<div class="email-text">${email}</div>`;
+                actionsHtml += `<a href="mailto:${email}" class="btn-card btn-email">מייל</a>`;
+            } else {
+                emailHtml = `<div class="email-text">אין מייל</div>`;
+                actionsHtml = `<a href="https://wa.me/972${phone}" target="_blank" class="btn-card btn-whatsapp" style="flex:100%;">וואטסאפ</a>`;
+            }
+
+            newCard.innerHTML = `
+                <div class="avatar-circle">${initials}</div>
+                <div class="person-name">${name}</div>
+                <div class="tags-container"><span class="tag">📍 ${city}</span></div>
+                <div class="phone-section">טלפון:</div>
+                <div class="phone-number">${phone}</div>
+                ${emailHtml}
+                <div class="card-actions">${actionsHtml}</div>
+            `;
+
+            cardsGrid.prepend(newCard);
+            alert('איש הקשר נוסף בהצלחה!');
+            document.getElementById('admin-panel').classList.add('hidden');
+            event.target.reset();
+            filterDirectory();
+        }
+
+        function filterDirectory() {
+            const query = document.getElementById('searchInput').value.toLowerCase();
+            const selectedCity = document.getElementById('cityFilter').value;
+            const cards = document.querySelectorAll('.person-card');
+
+            cards.forEach(card => {
+                const city = card.getAttribute('data-city');
+                const text = card.innerText.toLowerCase();
+
+                const matchesSearch = text.includes(query);
+                const matchesCity = !selectedCity || city === selectedCity;
+
+                if (matchesSearch && matchesCity) {
+                    card.style.display = 'flex';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+    </script>
+</body>
+</html>
